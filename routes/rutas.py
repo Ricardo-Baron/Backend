@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Response
-from models.modelo import User, BarrioBase,LoginRequest
+from models.modelo import User, BarrioBase,LoginRequest,AccesoQr
 from config.database import collection_name, neighborhood_collection
 from schema.myschema import list_serial, individual_serial,passQR,list_serial_Barrios, individual_serial_Barrio
 from starlette.status import HTTP_204_NO_CONTENT, HTTP_400_BAD_REQUEST, HTTP_201_CREATED
