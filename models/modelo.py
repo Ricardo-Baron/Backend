@@ -45,4 +45,10 @@ class BarrioBase(BaseModel):
 class LoginRequest(BaseModel):
     email: str
     password: str
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
+class AccesoQr(BaseModel):
+    passwordQR:str
+    barrios:str
