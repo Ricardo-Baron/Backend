@@ -340,16 +340,57 @@ async def generar_QR(userId:str):
     return Response(content=img_io.getvalue(), media_type="image/png")
 
 # GET REQUEST METHOD:Permite al ingresar actualizar la contraseña de QR
-@endpoint.get("/{passwordQR}")
-async def ingreso_user(passwordQR:str):
+@endpoint.post("/api/acceso")
+async def acceso_user(datos:AccesoQr):
+    datosQR=datos.passwordQR
+    Barrio=datos.barrios
+    
+    posUser=datosQR.find("-")#datosQR.find("-", posBarrio+1)
+    print(f" posBarrio:{Barrio}, posUser:{posUser}")
+    if  posUser != -1:
+        #barrioAcceso=datosQR[:posBarrio]
+        userId=datosQR[:posUser]#datosQR[posBarrio+1:posUser]
+        passwordQR=datosQR[posUser+1:]
+        print(f"barrio:{Barrio}, userId:{userId}, password: {passwordQR}")
+        datosOriginal=userId+"-"+passwordQR
+
+    
     try:
-        usuario=individual_serial(collection_name.find_one({"passwordQR":passwordQR}))
-        new_user=passQR(usuario)
-        collection_name.find_one_and_update({"dni":int(new_user["dni"])}, {"$set":new_user})
-        return HTTP_204_NO_CONTENT
-    except Exception as e:
-        print(e)
-        return  HTTP_400_BAD_REQUEST
+        # Convertir el ID a ObjectId
+        object_id = ObjectId(userId)
+    except Exception:
+        raise HTTPException(status_code=400, detail="ID inválido")
+    
+    usuario=collection_name.find_one({"_id":object_id })
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+       
+    userData=individual_serial(usuario)
+    print(userData)
+    print(userData.get("passwordQR"))
+    print(datosOriginal)
+    print(userData.get("barrios"))
+    print(Barrio)
+       
+    if ((userData.get("passwordQR")==datosOriginal) and (userData.get("barrios")==Barrio)):
+    
+        token = userId+"-"+str(uuid.uuid4())  # Genera un ID único
+        print(token)
+
+        try :
+            
+            userData["name"]=userData.pop("nombre")
+            print(userData)
+            userData["passwordQR"]=token
+            collection_name.find_one_and_update({"_id": object_id},{"$set":userData})
+            print("ENtrada esitosa")
+            return "ok"
+        except Exception as e:
+            print (e)
+            return HTTP_400_BAD_REQUEST
+    else:
+        print("No entro al barrio")
 #-------------------BASE DE DATOS DE BARRIOS--------------------<<<<<
 # POST REQUEST METHOD --------->Creamos un Barrio
 #@endpoint.post("/barrios/")
